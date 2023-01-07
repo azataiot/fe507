@@ -1,5 +1,6 @@
 venv
 .idea
+report
 # Created by https://www.toptal.com/developers/gitignore/api/jetbrains+all,python,macos,windows,linux,jupyternotebooks
 # Edit at https://www.toptal.com/developers/gitignore?templates=jetbrains+all,python,macos,windows,linux,jupyternotebooks
 

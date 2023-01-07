@@ -14,4 +14,4 @@ Home = "https://azat.cc"
 
 [tool.flit.sdist]
 include = ["notebooks/*.ipynb"]
-exclude = ["data", "references", "resources", "static"]
+exclude = ["data", "references", "resources", "static", "report"]
