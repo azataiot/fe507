@@ -9,3 +9,6 @@ pydantic
 python-dotenv
 openpyxl
 StrEnum
+plotly_express
+tabulate
+kaleido
