@@ -1,0 +1,11 @@
+pandas~=1.5.2
+numpy~=1.24.1
+h5py
+scipy~=1.10.0
+matplotlib~=3.6.2
+hvplot
+plotly
+pydantic
+python-dotenv
+openpyxl
+StrEnum
