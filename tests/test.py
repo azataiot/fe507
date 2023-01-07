@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.ERROR)  # default logging for other libraries
 logging.getLogger('fe507').level = logging.DEBUG
 from fe507 import Data, Collection, DataSource, settings, CollectionGroup
 
-settings.data_dir = "../data"
+settings.data_dir = "./data"
 
 exchange_rates = Data(DataSource.EXCHANGE_RATES)
 sp500 = Data(DataSource.SP500)
