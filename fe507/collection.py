@@ -82,7 +82,7 @@ class Collection:
     def __repr__(self):
         return f'Collection({self.name})'
 
-    def __call__(self, *args, **kwargs) -> DataFrame | Series:
+    def __call__(self, *args, **kwargs) -> Union[DataFrame, Series]:
         return self._dataframe
 
     @property
@@ -106,11 +106,11 @@ class Collection:
     def last(self) -> Series:
         return self._dataframe.iloc[-1]
 
-    def get(self, by: date | str | None = None, on: str | None = None):
+    def get(self, by: Optional[Union[date, str]] = None, on: Optional[str] = None):
         ret = None
         if by is None:
             if on is None:
-                ret: DataFrame | Series = self._dataframe.to_frame()
+                ret: Union[DataFrame, Series] = self._dataframe.to_frame()
             else:
                 # on is not none, select the column
                 ret = self._dataframe[on].to_frame()
@@ -125,9 +125,9 @@ class Collection:
                 log.debug(f'query results {ret}, count:{ret.shape[0]}')
         return Collection(ret, name=self.name, currency=self.currency)
 
-    def get_range(self, from_year: int | str, to_year: int | str,
-                  from_month: int | str = '01', to_month: int | str = '12',
-                  from_day: int | str = '01', to_day: int | str = '31'
+    def get_range(self, from_year: Union[int, str], to_year: Union[int, str],
+                  from_month: Union[int, str] = '01', to_month: Union[int, str] = '12',
+                  from_day: Union[int, str] = '01', to_day: Union[int, str] = '31'
                   ):
         _tmp = self._dataframe
         _tmp_date_from = datetime(year=int(from_year), month=int(from_month), day=int(from_day))
@@ -137,17 +137,16 @@ class Collection:
             ]
         return Collection(ret, name=self.name, currency=self.currency)
 
-    def frequency(self, freq: DataResampleFrequency | None = DAY):
+    def frequency(self, freq: Optional[DataResampleFrequency] = DAY):
         _tmp = self._dataframe
         # prepare the data samples with given frequency
         sample = _tmp
-        match freq:
-            case DataResampleFrequency.DAY:
-                pass
-            case DataResampleFrequency.WEEK:
-                sample = _tmp.resample('W-MON').ffill()
-            case DataResampleFrequency.MONTH:
-                sample = _tmp.resample('MS').ffill()
+        if freq == DataResampleFrequency.DAY:
+            pass
+        if freq == DataResampleFrequency.WEEK:
+            sample = _tmp.resample('W-MON').ffill()
+        if freq == DataResampleFrequency.MONTH:
+            sample = _tmp.resample('MS').ffill()
         return Collection(sample, name=self.name, currency=self.currency)
 
     @property
@@ -200,23 +199,24 @@ class Collection:
         ret = _tmp[_tmp.columns.tolist()].apply(lambda x: x.autocorr())
         return ret
 
-    def ror(self, method: RateOfReturnType | None = LOGARITHMIC):
+    def ror(self, method: Optional[RateOfReturnType] = LOGARITHMIC):
         ret = None
         _tmp = self._numeric_data_frame
-        match method:
-            case RateOfReturnType.SIMPLE:
-                ret = _tmp.pct_change()
-            case RateOfReturnType.LOGARITHMIC:
-                for each in _tmp.columns.tolist():
-                    _tmp[each] = np.log(
-                        _tmp[each] / _tmp[each].shift(1)
-                    )
-                ret = _tmp
+
+        if method == RateOfReturnType.SIMPLE:
+            ret = _tmp.pct_change()
+        if method == RateOfReturnType.LOGARITHMIC:
+            for each in _tmp.columns.tolist():
+                _tmp[each] = np.log(
+                    _tmp[each] / _tmp[each].shift(1)
+                )
+            ret = _tmp
         return Collection(ret, name=self.name, currency=self.currency)
 
 
 class CurrencyAwareCollection(Collection):
-    def __init__(self, data: Data, exchange_rate: Data | None = None, currency: CurrencyType | None = CurrencyType.USD):
+    def __init__(self, data: Data, exchange_rate: Optional[Data] = None,
+                 currency: Optional[CurrencyType] = CurrencyType.USD):
         data.data = data.data.merge(exchange_rate.data, how='left')
         if currency == CurrencyType.TRY:
             _tmp = data.data.select_dtypes(include=self._numerics_data_types)
@@ -228,7 +228,7 @@ class CurrencyAwareCollection(Collection):
 class CollectionGroup:
     _dataframe: DataFrame = None
 
-    def __init__(self, _: [Collection | CurrencyAwareCollection]):
+    def __init__(self, _: Union[Collection, CurrencyAwareCollection]):
         self._collections = _
         self._dfs = [each.raw for each in self._collections]
         self._keys = [each.name for each in self._collections]
