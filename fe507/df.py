@@ -5,17 +5,18 @@ from enum import auto
 from strenum import StrEnum
 import numpy as np
 from pandas import DataFrame, Series
+from typing import Optional, Union
 
 from fe507 import log
 
 _numerics_data_types = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
 
 
-def get(df: DataFrame, by: date | str | None = None, on: str | None = None):
+def get(df: DataFrame, by: Optional[Union[date, str]] = None, on: Optional[str] = None):
     ret = None
     if by is None:
         if on is None:
-            ret: DataFrame | Series = df.to_frame()
+            ret: Union[DataFrame, Series] = df.to_frame()
         else:
             # on is not none, select the column
             ret = df[on].to_frame()
@@ -31,9 +32,9 @@ def get(df: DataFrame, by: date | str | None = None, on: str | None = None):
     return ret
 
 
-def get_range(df: DataFrame, from_year: int | str, to_year: int | str,
-              from_month: int | str = '01', to_month: int | str = '12',
-              from_day: int | str = '01', to_day: int | str = '31'
+def get_range(df: DataFrame, from_year: Union[int, str], to_year: Union[int, str],
+              from_month: Union[int, str] = '01', to_month: Union[int, str] = '12',
+              from_day: Union[int, str] = '01', to_day: Union[int, str] = '31'
               ):
     _tmp = df
     _tmp_date_from = datetime(year=int(from_year), month=int(from_month), day=int(from_day))
