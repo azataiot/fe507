@@ -2,7 +2,7 @@
 # Created by azat at 5.01.2023
 from datetime import date, datetime
 from enum import auto
-
+from typing import Optional
 import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
