@@ -12,3 +12,4 @@ StrEnum
 plotly_express
 tabulate
 kaleido
+'seaborn[stats]'
