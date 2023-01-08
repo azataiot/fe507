@@ -64,7 +64,7 @@ class RateOfReturnMethod(StrEnum):
     LOGARITHMIC = auto()
 
 
-def rate_of_return(df: DataFrame, method: RateOfReturnMethod | None = RateOfReturnMethod.LOGARITHMIC):
+def rate_of_return(df: DataFrame, method: Optional[RateOfReturnMethod] = RateOfReturnMethod.LOGARITHMIC):
     match method:
         case RateOfReturnMethod.SIMPLE:
             return df.pct_change()

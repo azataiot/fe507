@@ -2,7 +2,7 @@
 # Created by azat at 5.01.2023
 from datetime import date, datetime
 from enum import auto
-from typing import Optional
+from typing import Optional, Union
 import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
@@ -60,8 +60,8 @@ def _calc_iqr(x):
 class Collection:
     _numerics_data_types = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
 
-    def __init__(self, item: DataFrame | Series, name: str | None = None,
-                 currency: CurrencyType | None = CurrencyType.USD):
+    def __init__(self, item: Union[DataFrame, Series], name: Optional[str] = None,
+                 currency: Optional[CurrencyType] = CurrencyType.USD):
         # get the dataframe
         self._dataframe: DataFrame = item
         # remove duplicated

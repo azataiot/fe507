@@ -8,7 +8,7 @@ license = { file = "LICENSE" }
 authors = [{ name = "Azat Y", email = "steels-06.gasbag@icloud.com" }]
 readme = "README.md"
 dynamic = ["version", "description"]
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 classifiers = ["Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
     "Topic :: Software Development :: Libraries :: Python Modules",
