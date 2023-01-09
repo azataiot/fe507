@@ -16,3 +16,53 @@ FE507 is a simple yet very powerful, 'batteries included' intuitive package for 
   ```
 3. Enjoy.
 # fe507
+
+  ```
+
+## Basic Structures
+
+![image-20230109214822500](./README.assets/image-20230109214822500.png)
+
+![image-20230109214829790](./README.assets/image-20230109214829790.png)
+
+![image-20230109214836543](./README.assets/image-20230109214836543.png)
+
+## Examples:
+
+```python
+import plotly.express as px
+import matplotlib.pyplot as plt
+
+sp500 = Data(DataSource.SP500)
+bist100 = Data(DataSource.BIST100)
+bistall = Data(DataSource.BISTALL)
+gold = Data(DataSource.GOLD)
+btceth = Data(DataSource.BTCETH)
+exchange_rates = Data(DataSource.EXCHANGE_RATES)
+
+year_range = YearRange(from_year=2015, to_year=2022)
+
+sp = Collection(sp500.data, name="S&P500", currency=USD).get_range(year_range.from_year,
+                                                                   year_range.to_year).get(on="Index")
+b1 = CurrencyAwareCollection(bist100, exchange_rates, name="BIST100", currency=TRY).get_range(year_range.from_year,
+                                                                                              year_range.to_year).get(
+    on="IndexUSD")
+ba = CurrencyAwareCollection(bistall, exchange_rates, name="BISTALL", currency=TRY).get_range(year_range.from_year,
+                                                                                              year_range.to_year).get(
+    on="IndexUSD")
+gd = Collection(gold.data, name="Gold", currency=USD).get_range(year_range.from_year,
+                                                                year_range.to_year).get(on='Price ($/t oz)')
+btc = Collection(btceth.data, name="Bitcoin", currency=USD).get_range(year_range.from_year,
+                                                                      year_range.to_year).get(on='Bitcoin')
+
+g = CollectionGroup([sp, b1, ba, gd, btc])
+
+ror_sp_w = sp.frequency(WEEK).ror()
+ror_b1_w = b1.frequency(WEEK).ror()
+ror_ba_w = ba.frequency(WEEK).ror()
+ror_gd_w = gd.frequency(WEEK).ror()
+ror_btc_w = btc.frequency(WEEK).ror()
+
+g_ror_d = CollectionGroup([ror_sp_w, ror_b1_w, ror_ba_w, ror_gd_w, ror_btc_w])
+```
+
