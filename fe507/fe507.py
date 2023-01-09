@@ -5,6 +5,7 @@
 from datetime import date, datetime
 from enum import Enum
 from pathlib import Path
+from typing import Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -51,7 +52,7 @@ class Data:
            SP500, BIST100, BISTALL, GOLD, BTCETH, EXCHANGE_RATES, INFLATION, INTEREST_RATE
     """
     data: pd.DataFrame = None
-    data_dir: Path | str
+    data_dir: Union[Path, str]
 
     def __new__(cls, *args, **kwargs):
         cls.data_dir = settings.data_dir
@@ -81,40 +82,40 @@ class Data:
 
     def _init_source_specific_fields(self, source: DataSource):
         log.debug(f"handling source specific fields for {source}")
-        match source:
-            case DataSource.SP500:
-                self.numerical_columns = ['Index', 'Market cap (m$)']
-                self._date_column = 'Date'
-                self.name = 'sp500'
-                # self._normalize_strings()
-            case DataSource.BIST100:
-                self.numerical_columns = ['Index', 'Market cap (m TL)']
-                self._date_column = 'Date'
-                self.name = 'bist100'
-            case DataSource.BISTALL:
-                self.numerical_columns = ['Index', 'Market cap (m TL)']
-                self._date_column = 'Code'
-                self.name = 'bistall'
-            case DataSource.GOLD:
-                self.numerical_columns = ['Price ($/t oz)']
-                self._date_column = 'Date'
-                self.name = 'gold'
-            case DataSource.BTCETH:
-                self.numerical_columns = ['Bitcoin', 'Ethereum']
-                self._date_column = 'Date'
-                self.name = 'btceth'
-            case DataSource.EXCHANGE_RATES:
-                self.numerical_columns = ['TL/USD', 'TL/Euro']
-                self._date_column = 'Date'
-                self.name = 'exchange_rate'
-            case DataSource.INTEREST_RATE:
-                self.numerical_columns = []
-                self._date_column = None
-                self.name = 'interest_rate'
-            case DataSource.INFLATION:
-                self.numerical_columns = []
-                self._date_column = None
-                self.name = 'inflation'
+
+        if source == DataSource.SP500:
+            self.numerical_columns = ['Index', 'Market cap (m$)']
+            self._date_column = 'Date'
+            self.name = 'sp500'
+            # self._normalize_strings()
+        if source == DataSource.BIST100:
+            self.numerical_columns = ['Index', 'Market cap (m TL)']
+            self._date_column = 'Date'
+            self.name = 'bist100'
+        if source == DataSource.BISTALL:
+            self.numerical_columns = ['Index', 'Market cap (m TL)']
+            self._date_column = 'Code'
+            self.name = 'bistall'
+        if source == DataSource.GOLD:
+            self.numerical_columns = ['Price ($/t oz)']
+            self._date_column = 'Date'
+            self.name = 'gold'
+        if source == DataSource.BTCETH:
+            self.numerical_columns = ['Bitcoin', 'Ethereum']
+            self._date_column = 'Date'
+            self.name = 'btceth'
+        if source == DataSource.EXCHANGE_RATES:
+            self.numerical_columns = ['TL/USD', 'TL/Euro']
+            self._date_column = 'Date'
+            self.name = 'exchange_rate'
+        if source == DataSource.INTEREST_RATE:
+            self.numerical_columns = []
+            self._date_column = None
+            self.name = 'interest_rate'
+        if source == DataSource.INFLATION:
+            self.numerical_columns = []
+            self._date_column = None
+            self.name = 'inflation'
 
     def _set_index(self):
         if self._date_column is None:
@@ -125,7 +126,7 @@ class Data:
         ret = column in self._dataframe.columns
         return ret
 
-    def _add_date_filed(self, reference_field: str | None = 'Date'):
+    def _add_date_filed(self, reference_field: Optional[str] = 'Date'):
         if reference_field is None:
             log.debug(f"reference field is {reference_field}, skipping (None)")
             pass
@@ -150,31 +151,30 @@ class Data:
     def last(self):
         return self.data.iloc[-1]
 
-    def get(self, on_date: date | str):
+    def get(self, on_date: Union[date, str]):
         _tmp = self.numerical_data()
         self._filtered_df = _tmp.loc[
             _tmp['date'] == on_date
             ]
         return self._filtered_df
 
-    def get_column(self, column_name: str, timeframe: TimeFrameType | None = None):
+    def get_column(self, column_name: str, timeframe: Optional[TimeFrameType] = None):
         if column_name in self.numerical_columns:
             _df = self.numerical_data().set_index('date')[column_name]
             if timeframe is not None:
-                match timeframe:
-                    case TimeFrameType.DAY:
-                        pass
-                    case TimeFrameType.WEEK:
-                        _df = _df.resample('W-MON').ffill()
-                    case TimeFrameType.MONTH:
-                        _df = _df.resample('MS').ffill()
+                if timeframe == TimeFrameType.DAY:
+                    pass
+                if timeframe == TimeFrameType.WEEK:
+                    _df = _df.resample('W-MON').ffill()
+                if timeframe == TimeFrameType.MONTH:
+                    _df = _df.resample('MS').ffill()
             return _df
         else:
             raise ValueError(f"{column_name} dose not exists in {self.numerical_data().info}")
 
-    def get_range(self, from_year: int | str, to_year: int | str,
-                  from_month: int | str = '01', to_month: int | str = '12',
-                  from_day: int | str = '01', to_day: int | str = '31'
+    def get_range(self, from_year: Union[int, str], to_year: Union[int, str],
+                  from_month: Union[int, str] = '01', to_month: Union[int, str] = '12',
+                  from_day: Union[int, str] = '01', to_day: Union[int, str] = '31'
                   ):
         _tmp = self.numerical_data()
         _tmp_date_from = datetime(year=int(from_year), month=int(from_month), day=int(from_day))
@@ -227,34 +227,33 @@ class Data:
         _tmp = self.numerical_data(exclude_date=True)
         return _tmp[_tmp.columns.tolist()].apply(lambda x: x.autocorr())
 
-    def rate_of_return(self, mode: RateOfReturnType | None = RateOfReturnType.SIMPLE,
-                       timeframe: TimeFrameType | None = TimeFrameType.DAY):
+    def rate_of_return(self, mode: Optional[RateOfReturnType] = RateOfReturnType.SIMPLE,
+                       timeframe: Optional[TimeFrameType] = TimeFrameType.DAY):
         _tmp = self.numerical_data()
         # _tmp['date'] = pd.to_datetime(_tmp['date'])
         _tmp = _tmp.set_index('date')
         # prepare the data samples with given frequency
         sample = _tmp
-        match timeframe:
-            case TimeFrameType.DAY:
-                pass
-            case TimeFrameType.WEEK:
-                sample = _tmp.resample('W-MON').ffill()
-            case TimeFrameType.MONTH:
-                sample = _tmp.resample('MS').ffill()
-        match mode:
-            case RateOfReturnType.SIMPLE:
-                # return the simple rate of return for the given sample
-                return sample.pct_change()
-            case RateOfReturnType.LOGARITHMIC:
-                for each in sample.columns.tolist():
-                    sample[each] = np.log(
-                        sample[each] / sample[each].shift(1)
-                    )
-                return sample
-            case RateOfReturnType.GEOMETRIC:
-                # first calculate geometric mean for each row
-                raise NotImplementedError(
-                    "Calculating rate of return for this type is not supported in this version yet.")
+        if timeframe == TimeFrameType.DAY:
+            pass
+        if timeframe == TimeFrameType.WEEK:
+            sample = _tmp.resample('W-MON').ffill()
+        if timeframe == TimeFrameType.MONTH:
+            sample = _tmp.resample('MS').ffill()
+
+        if mode == RateOfReturnType.SIMPLE:
+            # return the simple rate of return for the given sample
+            return sample.pct_change()
+        if mode == RateOfReturnType.LOGARITHMIC:
+            for each in sample.columns.tolist():
+                sample[each] = np.log(
+                    sample[each] / sample[each].shift(1)
+                )
+            return sample
+        if mode == RateOfReturnType.GEOMETRIC:
+            # first calculate geometric mean for each row
+            raise NotImplementedError(
+                "Calculating rate of return for this type is not supported in this version yet.")
 
 # sp500 = Data(DataSource.SP500)
 # bist100 = Data(DataSource.BIST100)

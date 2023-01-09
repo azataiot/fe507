@@ -66,7 +66,7 @@ class Collection:
         self._dataframe: DataFrame = item
         # remove duplicated
         self._dataframe = self._dataframe.drop_duplicates()
-        self._dataframe = self._dataframe.dropna()
+        # self._dataframe = self._dataframe.dropna()
         # remove unnamed columns (if it is a DataFrame)
         if isinstance(self._dataframe, DataFrame):
             self._dataframe = self._dataframe.loc[:, ~self._dataframe.columns.str.contains("Unnamed")]
@@ -215,14 +215,14 @@ class Collection:
 
 
 class CurrencyAwareCollection(Collection):
-    def __init__(self, data: Data, exchange_rate: Optional[Data] = None,
+    def __init__(self, data: Data, exchange_rate: Optional[Data] = None, name: Optional[str] = None,
                  currency: Optional[CurrencyType] = CurrencyType.USD):
         data.data = data.data.merge(exchange_rate.data, how='left')
         if currency == CurrencyType.TRY:
             _tmp = data.data.select_dtypes(include=self._numerics_data_types)
             for each in _tmp.columns.tolist():
                 data.data[each + 'USD'] = _tmp[each] / _tmp['TL/USD']
-        super().__init__(data.data, currency=currency)
+        super().__init__(data.data, currency=currency, name=name)
 
 
 class CollectionGroup:
@@ -254,6 +254,9 @@ class CollectionGroup:
     def __getitem__(self, key):
         return self._collections[key]
 
+    def clean(self):
+        self._dataframe = self._dataframe.dropna()
+
     @property
     def count(self):
         return len(self._collections)
@@ -261,6 +264,10 @@ class CollectionGroup:
     @property
     def data(self):
         return self._dataframe
+
+    @property
+    def preview(self):
+        return pd.concat([self.data.head(10), self.data.tail(10)])
 
     @property
     def covariance(self):
@@ -289,6 +296,7 @@ class CollectionGroup:
     @property
     def geometric_mean(self) -> Series:
         _tmp = self._dataframe
+        _tmp.apply(lambda x: x.abs() if np.issubdtype(x.dtype, np.number) else x)
         ret = _tmp[_tmp.columns.tolist()].apply(lambda x: stats.gmean(x))
         return ret
 
