@@ -21,11 +21,11 @@ FE507 is a simple yet very powerful, 'batteries included' intuitive package for 
 
 ## Basic Structures
 
-![image-20230109214822500](./README.assets/image-20230109214822500.png)
+![image-20230109214822500](https://raw.githubusercontent.com/azataiot/images/master/2023/01/upgit_20230109_1673290215.png)
 
-![image-20230109214829790](./README.assets/image-20230109214829790.png)
+![image-20230109214829790](https://raw.githubusercontent.com/azataiot/images/master/2023/01/upgit_20230109_1673290221.png)
 
-![image-20230109214836543](./README.assets/image-20230109214836543.png)
+![image-20230109214836543](https://raw.githubusercontent.com/azataiot/images/master/2023/01/upgit_20230109_1673290230.png)
 
 ## Examples:
 
